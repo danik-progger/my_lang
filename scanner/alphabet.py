@@ -1,0 +1,14 @@
+NUMBERS = '0123456789'
+LETTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+L_ROUND_BR = '('
+R_ROUND_BR = ')'
+L_FIGURE_BR = '{'
+R_FIGURE_BR = '}'
+QUOTE = '"'
+SEMICOLON = ';'
+DOT = '.'
+SPACE = ' '
+UNDERSCORE = '_'
+
+SPEC_SYMBOLS = (L_ROUND_BR + R_ROUND_BR + L_FIGURE_BR + R_FIGURE_BR +
+                QUOTE + SEMICOLON + DOT)
