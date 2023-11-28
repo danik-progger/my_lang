@@ -6,3 +6,5 @@ class NFA_Node(AutomatonNode):
         super().__init__()
         self.to = dict()
         self.by_eps = set()
+    def to(self, letter: str) -> set:
+        return self.to[letter]

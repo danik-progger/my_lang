@@ -6,34 +6,34 @@ else:
     from ExprParser import ExprParser
 
 # This class defines a complete listener for a parse tree produced by ExprParser.
-
-
 class ExprListener(ParseTreeListener):
 
     # Enter a parse tree produced by ExprParser#prog.
-    def enterProg(self, ctx: ExprParser.ProgContext):
-        print(ctx)
+    def enterProg(self, ctx:ExprParser.ProgContext):
+        pass
 
     # Exit a parse tree produced by ExprParser#prog.
-    def exitProg(self, ctx: ExprParser.ProgContext):
-        print(ctx)
+    def exitProg(self, ctx:ExprParser.ProgContext):
+        pass
+
 
     # Enter a parse tree produced by ExprParser#stmt.
-    def enterStmt(self, ctx: ExprParser.StmtContext):
-        print(ctx)
+    def enterStmt(self, ctx:ExprParser.StmtContext):
+        pass
 
     # Exit a parse tree produced by ExprParser#stmt.
-    def exitStmt(self, ctx: ExprParser.StmtContext):
-        print(ctx.printexp)
-        print(ctx.assign)
+    def exitStmt(self, ctx:ExprParser.StmtContext):
+        pass
+
 
     # Enter a parse tree produced by ExprParser#expr.
-    def enterExpr(self, ctx: ExprParser.ExprContext):
-        print(ctx)
+    def enterExpr(self, ctx:ExprParser.ExprContext):
+        pass
 
     # Exit a parse tree produced by ExprParser#expr.
-    def exitExpr(self, ctx: ExprParser.ExprContext):
-        print(ctx)
+    def exitExpr(self, ctx:ExprParser.ExprContext):
+        pass
+
 
 
 del ExprParser

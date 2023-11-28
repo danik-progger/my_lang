@@ -1,17 +1,13 @@
 grammar Expr;
-SPACES
- : [ \t] -> skip
- ;
-FUN: ('fun'|'fun2');
+SPACES: [ \t] -> skip;
+FUN: 'func';
 MAIN: 'main';
 NEWLINE : [\r\n]+ ;
 INT     : [0-9]+ ;
-// PRINT   : 'print ' ;
 IDENT   : [a-zA-Z]+ ;
 
+prog:  FUN MAIN '(' ')' '{' NEWLINE ((stmt NEWLINE)*) '}';
 
-prog:  FUN MAIN '(' ')' '{' NEWLINE ((stmt NEWLINE)*) '}'
-    ;
 stmt: 'print' printexp=expr
     | ident=IDENT ('=') assign=expr
     ;

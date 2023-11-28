@@ -1,4 +1,4 @@
-fun main() {
+func main() {
     a = 2
     a = 3
     b = 4

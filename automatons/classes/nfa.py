@@ -1,9 +1,9 @@
-from automatons.classes.automaton import Automaton
 from automatons.nodes.nfa_node import NFA_Node
+from automatons.classes.automaton import Automaton
 
 
 class NFA(Automaton):
-    def __init__(self, alphabet=None):
+    def __init__(self):
         super().__init__()
         self.root = NFA_Node()
         self.sink = NFA_Node()
@@ -21,7 +21,7 @@ class NFA(Automaton):
 
     def delete_unreachable_states(self):
         queue = [self.root]
-        used = set()
+        used = {self.root}
 
         while len(queue) > 0:
             curr = queue.pop(0)
@@ -45,6 +45,8 @@ class NFA(Automaton):
         while len(self.all_eps_transitions()) > 0:
             transitions = self.all_eps_transitions()
             for source, target in transitions:
+                for t in target.terminal:
+                    source.terminal.add(t)
                 source.by_eps.remove(target)
 
                 for to in target.by_eps:
@@ -54,3 +56,17 @@ class NFA(Automaton):
                         self.add_edge(source, s, letter)
 
         self.delete_unreachable_states()
+
+    def print(self):
+        print("number of states:", len(self.states))
+        for state in self.states:
+            if state == self.root:
+                print("root:", end=" ")
+            if state == self.sink:
+                print("sink:", end=" ")
+            print(state, *state.terminal)
+            print("transitions: ", end=" ")
+            for letter, to in sorted(state.to.items()):
+                print(f"{letter}: {[str(el) for el in to]}", end=" ")
+            print("\nby eps:", [str(el) for el in state.by_eps])
+            print()

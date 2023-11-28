@@ -14,21 +14,31 @@ def get_move(source: set[NFA_Node], letter: str) -> set[NFA_Node]:
     return move
 
 
+def form_alphabet(dfa: DFA, curr_state) -> set:
+    letters = set()
+    for vert in curr_state:
+        for letter in vert.to.keys():
+            if letter is not None:
+                letters.add(letter)
+                dfa.alphabet.add(letter)
+
+    return letters
+
+
 def dfa_from_nfa(nfa: NFA) -> DFA:
+    nfa.delete_epsilon_transitions()
+
     dfa_nodes = []
     transitions = dict()
 
     queue = [frozenset([nfa.root])]
     dfa_nodes.append(frozenset([nfa.root]))
     used = set()
+    dfa = DFA()
 
     while len(queue) > 0:
         curr_state = queue.pop(0)
-
-        letters = set()
-        for vert in curr_state:
-            for letter in vert.to.keys():
-                letters.add(letter)
+        letters = form_alphabet(dfa, curr_state)
 
         for letter in letters:
             next_state = frozenset(get_move(curr_state, letter))
@@ -41,7 +51,6 @@ def dfa_from_nfa(nfa: NFA) -> DFA:
                 used.add(next_state)
                 dfa_nodes.append(next_state)
 
-    dfa = DFA()
     equivalent = dict()
     for node in dfa_nodes:
         if nfa.root in node:
@@ -52,12 +61,15 @@ def dfa_from_nfa(nfa: NFA) -> DFA:
             dfa.states.add(new_node)
             equivalent[node] = new_node
 
+        for n in node:
+            for t in n.terminal:
+                equivalent[node].terminal.add(t)
+
     for source, letter_transitions in transitions.items():
         for letter, target in letter_transitions.items():
             dfa.add_edge(equivalent[source], equivalent[transitions[source][letter]], letter)
 
     dfa.delete_unreachable_states()
-    dfa.states.add(dfa.trash)
 
     return dfa
 

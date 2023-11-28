@@ -1,95 +1,107 @@
-from automatons.classes.dfa import DFA
-from nodes.KeyWord import KeyWord
-from nodes.expressions.leaf_expressions import LeafExpression
-from nodes.expressions.leaf_expressions.bool import Bool
-from nodes.expressions.leaf_expressions.number import Number
-from nodes.expressions.leaf_expressions.str import String
-from scanner.alphabet import QUOTE, SPEC_SYMBOLS, NUMBERS
+from scanner.alphabet import ALPHABET, category_for
+from scanner.tokens import TOKENS
+from scanner.lexem import Lexem
+from scanner.table import Table
+import re
 
 
 class Scaner:
-    def __init__(self, dfa: DFA, key_words=None):
-        self.dfa = dfa
+    def __init__(self, table: Table, key_words=None):
+        self.table = table
         self.key_words = key_words if key_words is not None else []
-        self.tokens = []
+        self.lexems = []
 
-    def go_through_dfa(self, word):
+    def go_through_table(self, word):
         if len(word) > 255:
             raise Exception("Only strings could be longer than 255 characters")
 
-        curr_node = self.dfa.root
+        curr_state = self.table.start
         value = ""
         curr_token = None
 
-        for letter in word:
-            if curr_node != self.dfa.trash:
+        for i in range(len(word)):
+            letter = word[i]
+            if category_for(letter) not in self.table[curr_state].keys() or self.table[curr_state][category_for(letter)] == self.table.error:
+                if value == "":
+                    raise Exception(f"Language doesn't support {word}")
+                self.lexems.append(Lexem(curr_token[0], value))
+                return word[i:]
+            else:
+                curr_state = self.table[curr_state][category_for(letter)]
                 value += letter
-                curr_token = list(curr_node.terminal)[0] \
-                    if len(curr_node.terminal) > 0 else curr_token
-                curr_node = curr_node.to[letter]
+                curr_token = list(curr_state.terminal)
 
         if len(value) < len(word):
             raise Exception(f"{word} is not recognised as valid token")
 
         if len(curr_token) != 1:
-            raise Exception(f"Compiler cannot choose token for {word}")
-
-        self.tokens.append(curr_token(value))
+            print(curr_token)
+            raise Exception(f"Scaner cannot find lexem for {word}")
+        else:
+            curr_token = curr_token[0]
+        self.lexems.append(Lexem(curr_token, value))
 
     def read_number(self, word: str):
         num = 0
-        if word[0] == 0:
-            raise Exception("Number cannot start with 0")
-        for letter in word:
-            if letter in NUMBERS:
-                num = num * 10 + int(letter)
+        for i in range(len(word)):
+            if word[i] in ALPHABET['NUM']:
+                num = num * 10 + int(word[i])
             else:
-                raise Exception(f"{word} is not number")
-
-        self.tokens.append(Number(num))
+                self.lexems.append(Lexem(TOKENS.NUM.name, num))
+                return word[i:]
+        self.lexems.append(Lexem(TOKENS.NUM.name, num))
 
     def read_string(self, word: str):
-        next_quote_index = word.index(QUOTE)
-        if next_quote_index < len(word) - 1:
-            raise Exception("String cannot content quote")
-
-        self.tokens.append(String(word[1:-1]))
+        self.lexems.append(Lexem(TOKENS.STR.name, word[1:-1]))
 
     def read_bool(self, word: str):
-        token = Bool(bool(word))
-        self.tokens.append(token)
+        self.lexems.append(Lexem(TOKENS.BOOL.name, word == 'true'))
+
+    def scan_word(self, word: str):
+        if word[0] == '0':
+            raise Exception('Nothing could start with 0')
+
+        elif word[0] == ' ':
+            pass
+        elif word[0] in ALPHABET['NUM']:
+            next_word = self.read_number(word)
+            if next_word is not None:
+                self.scan_word(next_word)
+
+        elif word[0] == ALPHABET['QUOTE']:
+            if word[-1] != ALPHABET['QUOTE']:
+                raise Exception("There is no closing quote found")
+            self.read_string(word)
+
+        elif word in ['true', 'false']:
+            self.read_bool(word)
+
+        elif word in self.key_words:
+            self.lexems.append(Lexem(TOKENS.KEYWORD.name, word))
+
+        else:
+            next_word = self.go_through_table(word)
+            if next_word is not None:
+                self.scan_word(next_word)
 
     def scan(self, text: str):
-        for ch in text:
-            if ch not in SPEC_SYMBOLS:
-                if ch != QUOTE:
-                    text.replace(f"{ch}", f" {ch} ")
+        words = re.split('(\".*?\")|\s+', text)
+        words = [w for w in words if w is not None and w != '']
+        print(words)
 
-        words = text.split()
-        for i in range(len(words)):
-            if words[i][0] == '0':
-                raise Exception('nothing could start with 0')
+        i = 0
+        while i < len(words):
+            self.scan_word(words[i])
+            i += 1
 
-            elif words[i][0] in NUMBERS:
-                self.read_number(words[i])
+        lexems = self.lexems
+        self.lexems = []
+        return lexems
 
-            elif words[i][0] == QUOTE:
-                i = self.read_string(words[i])
 
-            elif words[i] in ['true', 'false']:
-                self.read_bool(words[i])
-
-            elif words[i] in self.key_words:
-                self.tokens.append(KeyWord(words[i]))
-
-            else:
-                self.go_through_dfa(words[i])
-
-    def print_tokens(self):
-        for token in self.tokens:
-            print(token, end="")
-            if isinstance(token, LeafExpression):
-                if token.value in [";", "{", "}"]:
-                    print("\n")
-            else:
-                print(" ")
+def print_lexems(lexems: list):
+    for lexem in lexems:
+        print(lexem, end="\n" if lexem.value in [";", "{", "}"] else " ")
+        if lexem.value == "{":
+            print("", end="\t")
+    print("\n")

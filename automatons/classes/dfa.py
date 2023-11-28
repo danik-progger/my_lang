@@ -3,12 +3,12 @@ from automatons.nodes.dfa_node import DFA_Node
 
 
 class DFA(Automaton):
-    def __init__(self, alphabet=None):
+    def __init__(self):
         super().__init__()
         self.root = DFA_Node()
-        self.trash = DFA_Node()
+        self.trap = DFA_Node()
         self.states.add(self.root)
-        self.states.add(self.trash)
+        self.states.add(self.trap)
 
     def add_edge(self, source: DFA_Node, target: DFA_Node, letter: str):
         self.states.add(source)
@@ -19,7 +19,7 @@ class DFA(Automaton):
 
     def delete_unreachable_states(self):
         queue = [self.root]
-        used = set()
+        used = {self.root}
 
         while len(queue) > 0:
             curr = queue.pop(0)
@@ -33,19 +33,19 @@ class DFA(Automaton):
             self.states.remove(state)
 
     def make_full(self):
+        for letter in self.alphabet:
+            self.add_edge(self.trap, self.trap, letter)
         for state in self.states:
             for letter in self.alphabet:
                 if letter not in state.to.keys():
-                    self.add_edge(state, self.trash, letter)
+                    if letter is not None:
+                        self.add_edge(state, self.trap, letter)
 
-        for letter in self.alphabet:
-            self.add_edge(self.trash, self.trash, letter)
-
-        return self
-
-    def merge_states(self, states_to_merge: list):
+    def merge_states(self, states_to_merge: set):
         new_state = DFA_Node()
         self.states.add(new_state)
+        if self.root in states_to_merge:
+            self.root = new_state
 
         for dfa_state in self.states:
             for key, value in dfa_state.to.items():
@@ -59,18 +59,38 @@ class DFA(Automaton):
                 else:
                     new_state.to[key] = value
 
+            for t in state.terminal:
+                new_state.terminal.add(t)
+
             if state in self.states:
                 self.states.remove(state)
+        print("merging states in dfa")
 
     def minimize(self):
-        states_to_merge = []
-
+        equivalents = dict()
         for state1 in self.states:
             for state2 in self.states:
-                if state1.to == state2.to and state1 != state2:
-                    if [state2, state1] not in states_to_merge:
-                        states_to_merge.append([state1, state2])
+                if state1.to == state2.to and state1 != state2 and state1.terminal == state2.terminal:
+                    if id(state1) in equivalents.keys():
+                        equivalents[id(state1)].add(state2)
+                    if id(state2) in equivalents.keys():
+                        equivalents[id(state2)].add(state1)
+                    else:
+                        equivalents[id(state1)] = {state1, state2}
 
-        for pair in states_to_merge:
-            print(pair)
-            self.merge_states(pair)
+        for key, states in equivalents.items():
+            self.merge_states(states)
+
+    def print(self):
+        print("number of states:", len(self.states))
+        print("alphabet:", *sorted(self.alphabet))
+        for state in self.states:
+            if state == self.root:
+                print("root", end=" ")
+            if state == self.trap:
+                print("trap", end=" ")
+            print(state, *state.terminal)
+            print("transitions: ", end=" ")
+            for letter, to in sorted(state.to.items()):
+                print(f"{letter}: {str(to)}", end=" ")
+            print("\n")

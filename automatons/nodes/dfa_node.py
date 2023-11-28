@@ -10,6 +10,9 @@ class DFA_Node(AutomatonNode):
                 for token in node.terminal:
                     self.terminal.add(token)
 
+    def To(self, letter: str) -> AutomatonNode:
+        return self.to[letter]
+
     def accept(self, visitor):
         return self.terminal
 

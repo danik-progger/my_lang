@@ -30,7 +30,7 @@ public class ExprParser extends Parser {
 	private static String[] makeLiteralNames() {
 		return new String[] {
 			null, "'('", "')'", "'{'", "'}'", "'print'", "'='", "'*'", "'/'", "'+'", 
-			"'-'", null, null, "'main'"
+			"'-'", null, "'func'", "'main'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();

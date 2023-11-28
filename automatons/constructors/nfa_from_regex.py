@@ -1,14 +1,19 @@
 from automatons.classes.nfa import NFA
-from automatons.regex.regex_nodes.binary_node import BinaryNode, RegexOperations
-from automatons.regex.regex_nodes.leaf_node import LeafNode
-from automatons.regex.regex_nodes.regex_node import RegexNode
+from automatons.constructors.nfa_operations import closure_automaton, concat_automatons, unite_automatons
+from regex.nodes.binary_node import BinaryNode, RegexOperations
+from regex.nodes.leaf_node import LeafNode
+from regex.nodes.regex_node import RegexNode
 
 
-def nfa_from_regex(regex: RegexNode):
+def nfa_from_regex(regex: RegexNode, terminal=None):
     if isinstance(regex, LeafNode):
-        return nfa_from_leaf_node(regex)
+        nfa = nfa_from_leaf_node(regex)
     else:
-        return nfa_from_binary_node(regex)
+        nfa = nfa_from_binary_node(regex)
+    if terminal is not None:
+        nfa.sink.make_terminal(terminal)
+
+    return nfa
 
 
 def nfa_from_leaf_node(regex: LeafNode) -> NFA:
@@ -18,31 +23,19 @@ def nfa_from_leaf_node(regex: LeafNode) -> NFA:
 
 
 def nfa_from_binary_node(regex: BinaryNode) -> NFA:
-    nfa = NFA()
-    automatons = prepare_automatons([regex.exp1, regex.exp2])
+    automatons = automatons_from_regexps([regex.exp1, regex.exp2])
 
     if regex.operation == RegexOperations.CLOSURE:
-        nfa.root.by_eps.add(automatons[0].root)
-        nfa.root.by_eps.add(nfa.sink)
-        nfa.sink.by_eps.add(automatons[0].root)
-        automatons[0].sink.by_eps.add(nfa.sink)
+        return closure_automaton(automatons[0])
 
     elif regex.operation == RegexOperations.UNITE:
-        nfa.root.by_eps.add(automatons[0].root)
-        nfa.root.by_eps.add(automatons[1].root)
-        automatons[0].sink.by_eps.add(nfa.sink)
-        automatons[1].sink.by_eps.add(nfa.sink)
+        return unite_automatons(automatons)
 
     elif regex.operation == RegexOperations.CONCAT:
-        nfa.root.by_eps.add(automatons[0].root)
-        automatons[0].sink.by_eps.add(automatons[1].root)
-        automatons[1].sink.by_eps.add(nfa.sink)
-
-    nfa.add_nodes(automatons)
-    return nfa
+        return concat_automatons(automatons)
 
 
-def prepare_automatons(regexps: list[RegexNode]) -> list[NFA]:
+def automatons_from_regexps(regexps: list[RegexNode]) -> list[NFA]:
     ans = []
     for reg in regexps:
         if reg is not None:
