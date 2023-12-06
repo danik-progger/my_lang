@@ -6,5 +6,6 @@
 .vscode
 *.iml
 __pycache__
+venv
 out
 gen
