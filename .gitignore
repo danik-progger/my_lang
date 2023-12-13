@@ -5,4 +5,7 @@
 .idea
 .vscode
 *.iml
-__pycahe__
+__pycache__
+
+out
+gen
