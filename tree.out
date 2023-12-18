@@ -160,7 +160,7 @@ PrintExpression
 --------
 
 Assign
-    IdentExpression(<interpreter.nodes.expressions.AccesByIndexExpression.AccessByIndexExpression object at 0x7fb97e176550>)
+    IdentExpression(<interpreter.nodes.expressions.AccesByIndexExpression.AccessByIndexExpression object at 0x7fec940b9630>)
     NumberExpression(0)
 
 --------
@@ -173,7 +173,7 @@ PrintExpression
 --------
 
 Assign
-    IdentExpression(<interpreter.nodes.expressions.AccesByIndexExpression.AccessByIndexExpression object at 0x7fb97e176790>)
+    IdentExpression(<interpreter.nodes.expressions.AccesByIndexExpression.AccessByIndexExpression object at 0x7fec940b9390>)
     AddExpression
         AccessByIndexExpression
             Ident(arr)
