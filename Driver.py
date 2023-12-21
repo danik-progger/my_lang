@@ -16,17 +16,13 @@ def main(argv):
     tree = parser.prog()
     ast_tree = ExprVisitor().visit(tree)
 
-    try:
-        interpeter = InterpreterVisitor()
-        interpeter.visit_program(ast_tree)
+    interpeter = InterpreterVisitor()
+    interpeter.visit_program(ast_tree)
 
-        printer = PrintVisitor()
-        printer.visit_program(ast_tree)
-        with open("tree.out", "w") as f:
-            f.write(printer.str)
-    except Exception as e:
-        print(e, file=sys.stderr)
-        sys.exit(2)
+    printer = PrintVisitor()
+    printer.visit_program(ast_tree)
+    with open("tree.out", "w") as f:
+        f.write(printer.str)
 
 
 if __name__ == '__main__':
