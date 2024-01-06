@@ -94,7 +94,7 @@ class Scaner:
             self.scan_word(words[i])
             i += 1
 
-        lexems = self.lexems
+        lexems = [str(x) for x in self.lexems]
         self.lexems = []
         return lexems
 
